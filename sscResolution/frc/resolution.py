@@ -138,7 +138,7 @@ def _frc_( f1, f2, delta):
             consistency_T = False
 
         if curve[k] < Ts[k]:
-            consistency_Ts = False        
+            consistency_Ts = False
         
     B[0] = 0
     I[0] = I[1]
@@ -207,34 +207,30 @@ def computep(image, nthreads, *args):
     ########################
     
     size = len(ecurves['C'])
-        
-    xaxis = numpy.linspace(0, 1, size)    
-    
-    xvals  = numpy.linspace(0, xaxis.max(), 4*size)    
-    FC_   = interp1d(xaxis, (ocurves['C'].real + ecurves['C'].real)/2.0,  kind='cubic')
-    FC_Th = interp1d(xaxis, (ocurves['H']      + ecurves['H'])/2.0,       kind='cubic')
-    FC_Ts = interp1d(xaxis, (ocurves['S']      + ecurves['S'])/2.0,       kind='cubic')
-    FC_B  = interp1d(xaxis, (ocurves['B']      + ecurves['B'])/2.0,       kind='cubic')
-    
-    xth,_, IdxTh = interpolated_intercept( xvals, FC_(xvals), FC_Th(xvals) )
-    xts,_, IdxTs = interpolated_intercept( xvals, FC_(xvals), FC_Ts(xvals) )
-    xrev,_,oIdxB = interpolated_intercept( xvals, FC_(xvals), FC_B(xvals) )
-    
-    IdxTh = int( xvals[ IdxTh] * size )
-    IdxTs = int( xvals[ IdxTs] * size )
-    IdxB  = int( xvals[ IdxB]  * size )
 
-    if ocurves['cons']['B']:
+    xaxis = numpy.linspace(0, 1, size)
+
+    C = (ocurves['C'].real + ecurves['C'].real )/2.0
+    H = (ocurves['H'] + ecurves['H'])/2.0
+    S = (ocurves['S'] + ecurves['S'])/2.0
+    B = (ocurves['B'] + ecurves['B'])/2.0
+    
+    xth,_, IdxTh = interpolated_intercept( xaxis, C, H )
+    xts,_, IdxTs = interpolated_intercept( xaxis, C, S )
+    xrev,_,IdxB  = interpolated_intercept( xaxis, C, B )
+
+    if ocurves['cons']['B'] and ecurves['cons']['B']:
         xrev = 1
         IdxB = size-1
 
-    if ocurves['cons']['S']:
+    if ocurves['cons']['S'] and ecurves['cons']['S']:
         xts = 1
         IdxTs = size-1
 
-    if ocurves['cons']['H']:
+    if ocurves['cons']['H'] and ecurves['cons']['H']:
         xth = 1
         IdxTh = size-1
+    
         
     dic = {}
     dic['curves'] = {
@@ -284,32 +280,29 @@ def compute(image, *args):
     size = len(ecurves['C'])
         
     xaxis = numpy.linspace(0, 1, size)    
-    
-    xvals  = numpy.linspace(0, xaxis.max(), 4*size)    
-    FC_   = interp1d(xaxis, (ocurves['C'].real + ecurves['C'].real)/2.0,  kind='cubic')
-    FC_Th = interp1d(xaxis, (ocurves['H']      + ecurves['H'])/2.0,       kind='cubic')
-    FC_Ts = interp1d(xaxis, (ocurves['S']      + ecurves['S'])/2.0,       kind='cubic')
-    FC_B  = interp1d(xaxis, (ocurves['B']      + ecurves['B'])/2.0,       kind='cubic')
-    
-    xth,_, IdxTh = interpolated_intercept( xvals, FC_(xvals), FC_Th(xvals) )
-    xts,_, IdxTs = interpolated_intercept( xvals, FC_(xvals), FC_Ts(xvals) )
-    xrev,_,IdxB  = interpolated_intercept( xvals, FC_(xvals), FC_B(xvals) )
-    
-    IdxTh = int( xvals[ IdxTh] * size )
-    IdxTs = int( xvals[ IdxTs] * size )
-    IdxB  = int( xvals[ IdxB]  * size )
 
-    if ocurves['cons']['B']:
+    C = (ocurves['C'].real + ecurves['C'].real)/2.0
+    H = (ocurves['H']      + ecurves['H'])/2.0
+    S = (ocurves['S']      + ecurves['S'])/2.0
+    B = (ocurves['B']      + ecurves['B'])/2.0
+    
+    xth,_, IdxTh = interpolated_intercept( xaxis, C, H )
+    xts,_, IdxTs = interpolated_intercept( xaxis, C, S )
+    xrev,_,IdxB  = interpolated_intercept( xaxis, C, B )
+
+    
+    if ocurves['cons']['B'] and ecurves['cons']['B']:
         xrev = 1
         IdxB = size-1
 
-    if ocurves['cons']['S']:
+    if ocurves['cons']['S'] and ecurves['cons']['S']:
         xts = 1
         IdxTs = size-1
 
-    if ocurves['cons']['H']:
+    if ocurves['cons']['H'] and ecurves['cons']['H']:
         xth = 1
         IdxTh = size-1
+
         
     dic = {}
     dic['curves'] = {
@@ -351,20 +344,27 @@ def compute2i(image1, image2, *args):
     size = len(curves['C'])
     
     xaxis = numpy.linspace(0, 1, size)
+
+    C = curves['C'].real
+    H = curves['H']
+    S = curves['S']
+    B = curves['B']
     
-    xvals = numpy.linspace(0, xaxis.max(), 4*size)    
-    FC_   = interp1d(xaxis, curves['C'].real, kind='cubic')
-    FC_Th = interp1d(xaxis, curves['H'],      kind='cubic')
-    FC_Ts = interp1d(xaxis, curves['S'],      kind='cubic')
-    FC_B  = interp1d(xaxis, curves['B'],      kind='cubic')
+    xth,_, IdxTh = interpolated_intercept( xaxis, C, H )
+    xts,_, IdxTs = interpolated_intercept( xaxis, C, S )
+    xrev,_,IdxB  = interpolated_intercept( xaxis, C, B )
     
-    xth,_, IdxTh = interpolated_intercept( xvals, FC_(xvals), FC_Th(xvals) )
-    xts,_, IdxTs = interpolated_intercept( xvals, FC_(xvals), FC_Ts(xvals) )
-    xrev,_, IdxB = interpolated_intercept( xvals, FC_(xvals), FC_B(xvals) )
-  
-    IdxTh = int( xvals[ IdxTh] * size )
-    IdxTs = int( xvals[ IdxTs] * size )
-    IdxB  = int( xvals[ IdxB] * size )
+    if curves['cons']['B']:
+        xrev = 1
+        IdxB = size-1
+
+    if curves['cons']['S']:
+        xts = 1
+        IdxTs = size-1
+
+    if curves['cons']['H']:
+        xth = 1
+        IdxTh = size-1
     
     dic = {}
     dic['curves'] = {
@@ -410,17 +410,11 @@ def plot( dic ,usr ):
             fontsize = usr['fontsize']
         else:
             fontsize = [20,20]
-
             
         if 'full' in usr.keys():
             full = usr['full']
         else:
             full = False
-
-        if 'clean' in usr.keys():
-            clean = usr['clean']
-        else:
-            clean = False
 
         size  = len(dic['curves']['C'])
         xaxis = dic['x']['axis']
@@ -466,10 +460,7 @@ def plot( dic ,usr ):
 
             dxth = 0.02 
             xth_ = dic['x']['H'] 
-            if clean: 
-                legend[1] = '{}: {}'.format(r'$T_{1/2}$',round(xth,4) )
-            else:
-                legend[1] = '{}: {} - res: {} {}'.format(r'$T_{1/2}$', round(xth,4), round(dx/xth,3), un)
+            legend[1] = '{}: {} - res: {} {}'.format(r'$T_{1/2}$', round(xth,4), round(dx/xth,3), un)
             
             plt.axvspan(xth_ - dxth/2, xth_ + dxth/2, color='yellow', alpha=0.6, lw=0)
 
@@ -478,10 +469,7 @@ def plot( dic ,usr ):
             dxts = 0.02 
             xts_ = dic['x']['S'] 
 
-            if clean:
-                legend[2] = '{}: {}'.format( r'$T_{3\sigma}$', round(xts,4) )
-            else:
-                legend[2] = '{}: {} - res: {} {}'.format(r'$T_{3\sigma}$',round(xts,4), round(dx/xts,3), un)
+            legend[2] = '{}: {} - res: {} {}'.format(r'$T_{3\sigma}$',round(xts,4), round(dx/xts,3), un)
 
             plt.axvspan(xts_ - dxts/2, xts_ + dxts/2, color='green', alpha=0.4, lw=0)
 
@@ -490,14 +478,11 @@ def plot( dic ,usr ):
             dxrev = 0.02 
             xrev_ = dic['x']['B'] 
             
-            if clean:
-                legend[3] = '{}: {}'.format(r'$B$',round(xrev,4))
-                legend[4] = '{}'.format( r'$I$' )
-                legend[5] = '{}'.format( r'$U$')
-                legend[6] = '{}'.format( r'$N$')
-                legend[7] = '{}'.format( r'$\frac{1}{7}$' )
-            else:
-                legend[3] = '{}: {} - res: {} {}'.format(r'$B$', round(xrev,4), round(dx/xrev,3), un)
+            legend[3] = '{}: {} - res: {} {}'.format(r'$B$', round(xrev,4), round(dx/xrev,3), un)
+            legend[4] = '{}'.format( r'$I$' )
+            legend[5] = '{}'.format( r'$U$')
+            legend[6] = '{}'.format( r'$N$')
+            legend[7] = '{}'.format( r'$\frac{1}{7}$' )
             
             plt.axvspan(xrev_ - dxrev/2, xrev_ + dxrev/2, color='red', alpha=0.2, lw=0)
 
@@ -756,7 +741,8 @@ def _frc_parallel_( f1, f2, threads, delta ):
 
 def _worker_batch_frcMap_(params, idx_start,idx_end):
 
-    check = lambda x : 0 if x > 1 else ( 0 if x < 0 else x )
+    #check = lambda x : 0 if x > 1 else ( 0 if x < 0 else x )
+    check = lambda x: x
     
     image    = params[0]
     N        = params[2]
@@ -766,7 +752,8 @@ def _worker_batch_frcMap_(params, idx_start,idx_end):
     ngrid = params[5]
     eps   = params[6]
     flag  = params[7]
-    power = params[8]
+    bound = params[8]
+    power = params[9]
     
     n      = image.shape[0]
     delta  = float( n/ngrid )
@@ -808,7 +795,8 @@ def _worker_batch_frcMap_(params, idx_start,idx_end):
 
 def _worker_serial_frcMap_( params ):
 
-    check = lambda x : 0 if x > 1 else ( 0 if x < 0 else x )
+    #check = lambda x : 0 if x > 1 else ( 0 if x < 0 else x )
+    check = lambda x: x
     
     image    = params[0]
     N        = params[1]
@@ -931,7 +919,7 @@ def map(image, dic):
         
         elapsed = time.time() - start
                 
-        #print('Done: Image processed within {} sec'.format(elapsed))
+        print('ssc-resolution: 2D resolution map processed within {} sec'.format(elapsed))
         
         output = output[_eps_:_eps_+image.shape[0],_eps_:_eps_+image.shape[1]]
        
@@ -967,7 +955,7 @@ def map(image, dic):
         
         sa.delete(name)
         
-        #print('Done: Image processed within {} sec'.format(elapsed))
+        print('ssc-resolution: 2D resolution map processed within {} sec'.format(elapsed))
         
         output = output[_eps_:_eps_+image.shape[0],_eps_:_eps_+image.shape[1]]
 

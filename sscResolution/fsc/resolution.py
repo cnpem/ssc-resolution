@@ -176,7 +176,7 @@ def computep(volume, nthreads, *args):
     curves = _fsc_parallel_(evol1, evol2, nthreads, delta)
     ######
 
-    size = len(ecurve)
+    size = len(curves['C'])
     
     xaxis = numpy.linspace(0, 1, size)
     
@@ -189,6 +189,7 @@ def computep(volume, nthreads, *args):
     xth,_,IdxTh = interpolated_intercept( xvals, FC_(xvals), FC_Th(xvals) ) 
     xts,_,IdxTs = interpolated_intercept( xvals, FC_(xvals), FC_Ts(xvals) )
     xrev,_,IdxB = interpolated_intercept( xvals, FC_(xvals), FC_B(xvals) )
+
 
     IdxTh = int( xvals[ IdxTh] * size )
     IdxTs = int( xvals[ IdxTs] * size )
@@ -329,7 +330,7 @@ def _worker_batch_fsc_(params, idx_start,idx_end, elapsed):
     B     = params[12]
     I     = params[13]
     U     = params[14]
-    A     = params[15]
+    N     = params[15]
     delta = params[16]
 
     for k in range(idx_start, idx_end):
@@ -835,11 +836,6 @@ def plot( dic ,usr ):
         else:
             full = False
 
-        if 'clean' in usr.keys():
-            clean = usr['clean']
-        else:
-            clean = False
-
         size  = len(dic['curves']['C'])
         xaxis = dic['x']['axis']
 
@@ -884,10 +880,8 @@ def plot( dic ,usr ):
 
             dxth = 0.02 
             xth_ = dic['x']['H'] 
-            if clean: 
-                legend[1] = '{}: {}'.format(r'$T_{1/2}$',round(xth,4) )
-            else:
-                legend[1] = '{}: {} - res: {} {}'.format(r'$T_{1/2}$', round(xth,4), round(dx/xth,3), un)
+
+            legend[1] = '{}: {} - res: {} {}'.format(r'$T_{1/2}$', round(xth,4), round(dx/xth,3), un)
             
             plt.axvspan(xth_ - dxth/2, xth_ + dxth/2, color='yellow', alpha=0.6, lw=0)
 
@@ -896,10 +890,7 @@ def plot( dic ,usr ):
             dxts = 0.02 
             xts_ = dic['x']['S'] 
 
-            if clean:
-                legend[2] = '{}: {}'.format( r'$T_{3\sigma}$', round(xts,4) )
-            else:
-                legend[2] = '{}: {} - res: {} {}'.format(r'$T_{3\sigma}$',round(xts,4), round(dx/xts,3), un)
+            legend[2] = '{}: {} - res: {} {}'.format(r'$T_{3\sigma}$',round(xts,4), round(dx/xts,3), un)
 
             plt.axvspan(xts_ - dxts/2, xts_ + dxts/2, color='green', alpha=0.4, lw=0)
 
@@ -908,14 +899,11 @@ def plot( dic ,usr ):
             dxrev = 0.02 
             xrev_ = dic['x']['B'] 
             
-            if clean:
-                legend[3] = '{}: {}'.format(r'$B$',round(xrev,4))
-                legend[4] = '{}'.format( r'$I$' )
-                legend[5] = '{}'.format( r'$U$')
-                legend[6] = '{}'.format( r'$N$')
-                legend[7] = '{}'.format( r'$\frac{1}{7}$' )
-            else:
-                legend[3] = '{}: {} - res: {} {}'.format(r'$B$', round(xrev,4), round(dx/xrev,3), un)
+            legend[3] = '{}: {} - res: {} {}'.format(r'$B$', round(xrev,4), round(dx/xrev,3), un)
+            legend[4] = '{}'.format( r'$I$' )
+            legend[5] = '{}'.format( r'$U$')
+            legend[6] = '{}'.format( r'$N$')
+            legend[7] = '{}'.format( r'$\frac{1}{7}$' )
             
             plt.axvspan(xrev_ - dxrev/2, xrev_ + dxrev/2, color='red', alpha=0.2, lw=0)
 

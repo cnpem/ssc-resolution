@@ -6,139 +6,34 @@ import time
 from ..resolutiontypes import *
 
 def interpolated_intercept(x, y1, y2):
-   
-    def _intercept(point1, point2, point3, point4):
-        def _line(p1, p2):
-            A = (p1[1] - p2[1])
-            B = (p2[0] - p1[0])
-            C = (p1[0] * p2[1] - p2[0] * p1[1])
-            return A, B, -C
 
-        def _intersection(L1, L2):
-            D = L1[0] * L2[1] - L1[1] * L2[0]
-            Dx = L1[2] * L2[1] - L1[1] * L2[2]
-            Dy = L1[0] * L2[2] - L1[2] * L2[0]
-
-            x = Dx / D
-            y = Dy / D
-            return x, y
-
-        L1 = _line([point1[0], point1[1]], [point2[0], point2[1]])
-        L2 = _line([point3[0], point3[1]], [point4[0], point4[1]])
-
-        R = _intersection(L1, L2)
-
-        return R
-
-    found = -1
-    for k in range(len(y1)):
-        if y1[k] < y2[k] and found < 0 and k > 0:
-            idx = k
-            found = 1
-   
-    if found > 0 and idx < len(y1): 
-        if idx == len(y1) - 1:
-            xc = x[idx]
-            yc = y1[idx]
-        else:
-            xc, yc = _intercept((x[idx], y1[idx]), ((x[idx + 1], y1[idx + 1])),
-                        ((x[idx], y2[idx])), ((x[idx + 1], y2[idx + 1])))
-    else:
-        idx = -1
-        xc = 0
-        yc = 0
-
-    return xc, yc, idx
-
-
-def interpolated_intercept_2(x, y1, y2):
-   
-    def _intercept(point1, point2, point3, point4):
-        def _line(p1, p2):
-            A = (p1[1] - p2[1])
-            B = (p2[0] - p1[0])
-            C = (p1[0] * p2[1] - p2[0] * p1[1])
-            return A, B, -C
-
-        def _intersection(L1, L2):
-            D = L1[0] * L2[1] - L1[1] * L2[0]
-            Dx = L1[2] * L2[1] - L1[1] * L2[2]
-            Dy = L1[0] * L2[2] - L1[2] * L2[0]
-
-            x = Dx / D
-            y = Dy / D
-            return x, y
-
-        L1 = _line([point1[0], point1[1]], [point2[0], point2[1]])
-        L2 = _line([point3[0], point3[1]], [point4[0], point4[1]])
-
-        R = _intersection(L1, L2)
-
-        return R
-
-    #'''
-    idx = numpy.argwhere(numpy.diff(numpy.sign(y1 - y2)) != 0)
+    #
+    # find point where y1 >= y2
+    #
     
-    idx = numpy.argwhere(numpy.diff(numpy.sign(y1 - y2)) != 0)
-    xc, yc = _intercept((x[idx], y1[idx]), ((x[idx + 1], y1[idx + 1])),
-                        ((x[idx], y2[idx])), ((x[idx + 1], y2[idx + 1])))
+    k = numpy.argmin( y1 >= y2 )
 
-
-    xc = xc.flatten()
-    yc = yc.flatten()
-
-    if idx.size > 0:
-
-        if len(xc) > 1:
-            xc = xc[1]
-            yc = yc[1]
-        else:
-            xc = xc[0]
-            yc = yc[0]
-
-        if xc == 0:
-            idx = -1
-            xc = 0
-            yc = 0
-
-    else:
-        idx = -1
-        xc = 0
-        yc = 0
-    #'''
+    Dx  =  1.0 / (len(y1)-1)
+    x   =  k * Dx
+    Dy  = ( y1[k] - y2[k ] ) - ( y1[k-1] - y2[k-1] )
+    x   = x - Dx * ( y1[k]  - y2[k] ) / Dy
     
-    '''
-    found = -1
-    for k in range(len(y1)):
-        if abs(y1[k] - y2[k]) < 1e-1 and found < 0 and k > 0:
-            idx = k
-            found = 1
-   
-    if found > 0:    
-        xc, yc = _intercept((x[idx], y1[idx]), ((x[idx + 1], y1[idx + 1])),
-                        ((x[idx], y2[idx])), ((x[idx + 1], y2[idx + 1])))
-    else:
-        xc = -1 
-        yc = -1
-    '''
-
-    return xc, yc,idx
+    return x, None, k
 
 
 def histmap( rmap , dic, usr ):
 
     if len( dic['shape']) == 3:
-
         N    = dic['shape'][0]
         nvxl = N * N * N
         label = 'FSC/Map: ' + usr['label']
-        
-    elif len( dic['shape']) == 2:
-
+    else: 
         N    = dic['shape'][0]
         nvxl = N * N
         label = 'FRC/Map: ' + usr['label']
 
+    print(label)
+        
     eps = dic['eps']          
     color = 'r'
 
@@ -182,5 +77,5 @@ def histmap( rmap , dic, usr ):
     
     plt.xticks(numpy.round(numpy.linspace(baxis.min(), baxis.max(), 10),1), fontsize=fontsize[1])
     plt.yticks(numpy.round(numpy.linspace(V.min(), V.max(), 10),1), fontsize=fontsize[1])
-    plt.legend( label , prop={'size': fontsize[0]})
+    plt.legend( [label] , prop={'size': fontsize[0]})
     
